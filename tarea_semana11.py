@@ -139,7 +139,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------- INTERFAZ ----------
-st.title("💻 Inventario de Tienda de Cómputo")
+st.markdown("""
+<h1 style='color:black;'>💻 Inventario de Tienda de Cómputo</h1>
+<p style='color:black; font-size:18px;'>Sistema CRUD para registrar, consultar y administrar partes y componentes.</p>
+""", unsafe_allow_html=True)
+
 st.caption("Sistema CRUD para registrar, consultar y administrar partes y componentes.")
 
 create_table()
