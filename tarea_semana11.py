@@ -128,6 +128,54 @@ def delete_item(item_id):
 
 # ---------- ESTILOS ----------
 st.set_page_config(page_title="Inventario Tienda de Cómputo", layout="wide")
+# ---------- ESTILO GLOBAL ----------
+st.markdown("""
+    <style>
+    /* Fondo blanco */
+    .stApp {
+        background-color: #FFFFFF;
+        color: #000000;
+    }
+
+    /* Colores de títulos */
+    h1, h2, h3, h4, h5, h6 {
+        color: #000000 !important;
+    }
+
+    /* Texto normal */
+    p, label, span, div {
+        color: #000000 !important;
+    }
+
+    /* Campos de entrada */
+    .stTextInput > div > div > input,
+    .stNumberInput input {
+        color: #000000 !important;
+    }
+
+    /* Botones personalizados */
+    button[kind="primary"] {
+        background-color: #007bff !important;
+        color: white !important;
+        border-radius: 8px;
+        border: none;
+    }
+
+    button[kind="secondary"] {
+        background-color: #6c757d !important;
+        color: white !important;
+        border-radius: 8px;
+        border: none;
+    }
+
+    /* DataFrame */
+    .stDataFrame {
+        background-color: #f8f9fa !important;
+        color: #000000 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.markdown("""
     <style>
     body {background-color: #f8f9fa;}
@@ -143,8 +191,6 @@ st.markdown("""
 <h1 style='color:black;'>💻 Inventario de Tienda de Cómputo</h1>
 <p style='color:black; font-size:18px;'>Sistema CRUD para registrar, consultar y administrar partes y componentes.</p>
 """, unsafe_allow_html=True)
-
-st.caption("Sistema CRUD para registrar, consultar y administrar partes y componentes.")
 
 create_table()
 
