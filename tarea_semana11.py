@@ -129,15 +129,16 @@ def delete_item(item_id):
 # ---------- ESTILOS ----------
 st.set_page_config(page_title="Inventario Tienda de Cómputo", layout="wide")
 # ---------- ESTILO GLOBAL ----------
+# ---------- ESTILO GLOBAL ----------
 st.markdown("""
     <style>
-    /* Fondo blanco */
+    /* Fondo principal blanco */
     .stApp {
         background-color: #FFFFFF;
         color: #000000;
     }
 
-    /* Colores de títulos */
+    /* Títulos principales */
     h1, h2, h3, h4, h5, h6 {
         color: #000000 !important;
     }
@@ -147,13 +148,24 @@ st.markdown("""
         color: #000000 !important;
     }
 
+    /* Panel lateral (sidebar) */
+    section[data-testid="stSidebar"] {
+        background-color: #1E1E1E !important;
+        color: white !important;
+    }
+
+    section[data-testid="stSidebar"] * {
+        color: white !important;
+    }
+
     /* Campos de entrada */
     .stTextInput > div > div > input,
     .stNumberInput input {
         color: #000000 !important;
+        background-color: #FFFFFF !important;
     }
 
-    /* Botones personalizados */
+    /* Botones */
     button[kind="primary"] {
         background-color: #007bff !important;
         color: white !important;
@@ -176,6 +188,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+
 st.markdown("""
     <style>
     body {background-color: #f8f9fa;}
@@ -187,10 +200,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------- INTERFAZ ----------
-st.markdown("""
-<h1 style='color:black;'>💻 Inventario de Tienda de Cómputo</h1>
-<p style='color:black; font-size:18px;'>Sistema CRUD para registrar, consultar y administrar partes y componentes.</p>
-""", unsafe_allow_html=True)
+st.title("💻 Inventario de Tienda de Cómputo")
+st.caption("Sistema CRUD para registrar, consultar y administrar partes y componentes.")
+
 
 create_table()
 
