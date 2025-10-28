@@ -126,38 +126,50 @@ def delete_item(item_id):
     cur.close()
     conn.close()
 
-# ---------- UI ----------
+# ---------- ESTILOS ----------
 st.set_page_config(page_title="Inventario Tienda de Cómputo", layout="wide")
-st.title("💻 Inventario - Tienda de Computadoras y Laptops")
+st.markdown("""
+    <style>
+    body {background-color: #f8f9fa;}
+    .stApp {background-color: #fdfdfd;}
+    h1, h2, h3 {color: #0a3d62;}
+    .block-container {padding-top: 2rem; padding-bottom: 2rem;}
+    .css-1d391kg, .css-18ni7ap {background-color: #e9ecef; border-radius: 8px;}
+    </style>
+""", unsafe_allow_html=True)
+
+# ---------- INTERFAZ ----------
+st.title("💻 Inventario de Tienda de Cómputo")
+st.caption("Sistema CRUD para registrar, consultar y administrar partes y componentes.")
 
 create_table()
 
-menu = st.sidebar.selectbox("Menú", ["Registrar parte", "Ver inventario", "Editar / Eliminar", "Exportar CSV", "Acerca"])
+menu = st.sidebar.radio("📋 Menú principal", ["🏗️ Registrar parte", "📦 Ver inventario", "🛠️ Editar / Eliminar", "📤 Exportar CSV", "ℹ️ Acerca"])
 
-if menu == "Registrar parte":
-    st.header("Registrar nueva parte o componente")
+# ---------- REGISTRAR ----------
+if menu == "🏗️ Registrar parte":
+    st.header("🧩 Registrar nueva parte o componente")
     with st.form("form_nuevo"):
-        codigo = st.text_input("Código de producto", max_chars=50)
-        nombre = st.text_input("Nombre del componente")
-        marca = st.text_input("Marca")
-        modelo = st.text_input("Modelo")
-        tipo_parte = st.text_input("Tipo de parte (Ej. SSD, Placa madre, Mouse, Laptop)")
-        compatibilidad = st.text_input("Compatibilidad (Ej. Intel, AMD, DDR4)")
-        categoria = st.text_input("Categoría")
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         with col1:
+            codigo = st.text_input("Código de producto")
+            nombre = st.text_input("Nombre del componente")
+            marca = st.text_input("Marca")
+            modelo = st.text_input("Modelo")
+            tipo_parte = st.text_input("Tipo de parte (Ej. SSD, Placa madre, Mouse, Laptop)")
+            compatibilidad = st.text_input("Compatibilidad (Ej. Intel, AMD, DDR4)")
+        with col2:
+            categoria = st.text_input("Categoría")
             stock = st.number_input("Stock actual", min_value=0, value=0)
             stock_minimo = st.number_input("Stock mínimo", min_value=0, value=5)
-        with col2:
             precio_compra = st.number_input("Precio de compra (S/.)", min_value=0.0, value=0.0, format="%.2f")
             precio_venta = st.number_input("Precio de venta (S/.)", min_value=0.0, value=0.0, format="%.2f")
-        with col3:
             ubicacion = st.text_input("Ubicación en tienda (Ej. Estante A3)")
-        submitted = st.form_submit_button("Registrar")
+        submitted = st.form_submit_button("💾 Registrar parte")
 
     if submitted:
         if not codigo or not nombre:
-            st.error("Complete al menos Código y Nombre.")
+            st.error("⚠️ Complete al menos el código y el nombre.")
         else:
             item = {
                 'codigo': codigo.strip(),
@@ -175,16 +187,17 @@ if menu == "Registrar parte":
             }
             try:
                 new_id = insert_item(item)
-                st.success(f"Parte registrada correctamente (ID={new_id})")
+                st.success(f"✅ Parte registrada correctamente (ID={new_id})")
             except Exception as e:
-                st.error(f"Error al registrar: {e}")
+                st.error(f"❌ Error al registrar: {e}")
 
-elif menu == "Ver inventario":
-    st.header("Inventario de componentes")
-    q = st.text_input("Buscar por código/nombre/marca/categoría")
-    per_page = st.selectbox("Mostrar", [10, 25, 50, 100], index=1)
+# ---------- VER INVENTARIO ----------
+elif menu == "📦 Ver inventario":
+    st.header("📋 Inventario de componentes")
+    q = st.text_input("🔍 Buscar por código, nombre, marca o categoría")
+    per_page = st.selectbox("Mostrar registros por página", [10, 25, 50, 100], index=1)
     page = st.session_state.get("page", 0)
-    if st.button("Buscar") or q != "":
+    if st.button("Buscar"):
         st.session_state.page = 0
         page = 0
     offset = page * per_page
@@ -195,52 +208,56 @@ elif menu == "Ver inventario":
         if df.empty:
             st.info("No hay registros.")
         else:
-            st.dataframe(df.drop(columns=['created_at']), height=400)
+            st.dataframe(df.drop(columns=['created_at']), height=420, use_container_width=True)
             c1, c2, c3 = st.columns(3)
             with c1:
-                if st.button("<< Anterior") and page > 0:
+                if st.button("⬅️ Anterior") and page > 0:
                     st.session_state.page = page - 1
                     st.experimental_rerun()
             with c2:
-                st.write(f"Página: {page + 1}")
+                st.markdown(f"**Página {page + 1}**")
             with c3:
-                if st.button("Siguiente >>") and len(df) == per_page:
+                if st.button("Siguiente ➡️") and len(df) == per_page:
                     st.session_state.page = page + 1
                     st.experimental_rerun()
     except Exception as e:
-        st.error(f"Error obteniendo inventario: {e}")
+        st.error(f"❌ Error cargando inventario: {e}")
 
-elif menu == "Editar / Eliminar":
-    st.header("Editar o eliminar parte")
-    id_to_edit = st.number_input("ID del producto", min_value=1, step=1)
-    if st.button("Cargar parte"):
+# ---------- EDITAR / ELIMINAR ----------
+elif menu == "🛠️ Editar / Eliminar":
+    st.header("✏️ Editar o eliminar componente")
+    id_to_edit = st.number_input("Ingrese el ID del producto", min_value=1, step=1)
+    if st.button("📂 Cargar datos"):
         item = get_item_by_id(id_to_edit)
         if not item:
-            st.error("Parte no encontrada.")
+            st.error("No se encontró el producto.")
         else:
             st.session_state.edit_item = item
 
     if "edit_item" in st.session_state:
         it = st.session_state.edit_item
         with st.form("form_edit"):
-            codigo = st.text_input("Código", value=it['codigo'])
-            nombre = st.text_input("Nombre", value=it['nombre'])
-            marca = st.text_input("Marca", value=it['marca'])
-            modelo = st.text_input("Modelo", value=it['modelo'])
-            tipo_parte = st.text_input("Tipo de parte", value=it['tipo_parte'])
-            compatibilidad = st.text_input("Compatibilidad", value=it['compatibilidad'])
-            categoria = st.text_input("Categoría", value=it['categoria'])
-            col1, col2, col3 = st.columns(3)
+            st.subheader(f"✳️ Editando: {it['nombre']}")
+            col1, col2 = st.columns(2)
             with col1:
+                codigo = st.text_input("Código", value=it['codigo'])
+                nombre = st.text_input("Nombre", value=it['nombre'])
+                marca = st.text_input("Marca", value=it['marca'])
+                modelo = st.text_input("Modelo", value=it['modelo'])
+                tipo_parte = st.text_input("Tipo de parte", value=it['tipo_parte'])
+                compatibilidad = st.text_input("Compatibilidad", value=it['compatibilidad'])
+            with col2:
+                categoria = st.text_input("Categoría", value=it['categoria'])
                 stock = st.number_input("Stock actual", min_value=0, value=it['stock'])
                 stock_minimo = st.number_input("Stock mínimo", min_value=0, value=it['stock_minimo'])
-            with col2:
                 precio_compra = st.number_input("Precio compra (S/.)", min_value=0.0, value=float(it['precio_compra']), format="%.2f")
                 precio_venta = st.number_input("Precio venta (S/.)", min_value=0.0, value=float(it['precio_venta']), format="%.2f")
-            with col3:
                 ubicacion = st.text_input("Ubicación", value=it['ubicacion'])
-            btn_update = st.form_submit_button("Actualizar")
-            btn_delete = st.form_submit_button("Eliminar")
+            col_upd, col_del = st.columns(2)
+            with col_upd:
+                btn_update = st.form_submit_button("💾 Actualizar")
+            with col_del:
+                btn_delete = st.form_submit_button("🗑️ Eliminar")
 
         if btn_update:
             try:
@@ -259,37 +276,45 @@ elif menu == "Editar / Eliminar":
                     'ubicacion': ubicacion.strip()
                 }
                 update_item(it['id'], data)
-                st.success("Parte actualizada correctamente.")
+                st.success("✅ Parte actualizada correctamente.")
                 del st.session_state['edit_item']
             except Exception as e:
-                st.error(f"Error actualizando: {e}")
+                st.error(f"❌ Error actualizando: {e}")
 
         if btn_delete:
             try:
                 delete_item(it['id'])
-                st.success("Parte eliminada.")
+                st.warning("🗑️ Parte eliminada correctamente.")
                 del st.session_state['edit_item']
             except Exception as e:
-                st.error(f"Error eliminando: {e}")
+                st.error(f"❌ Error eliminando: {e}")
 
-elif menu == "Exportar CSV":
-    st.header("Exportar inventario a CSV")
+# ---------- EXPORTAR ----------
+elif menu == "📤 Exportar CSV":
+    st.header("📦 Exportar inventario a CSV")
     try:
-        rows = get_items(limit=10000, offset=0)
+        rows = get_items(limit=10000)
         df = pd.DataFrame(rows)
         if df.empty:
             st.info("No hay registros para exportar.")
         else:
-            st.dataframe(df.drop(columns=['created_at']), height=300)
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button("Descargar CSV", data=csv, file_name="inventario_tienda_computo.csv", mime="text/csv")
+            st.dataframe(df.drop(columns=['created_at']), height=350, use_container_width=True)
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button("⬇️ Descargar CSV", data=csv, file_name="inventario_tienda_computo.csv", mime="text/csv")
     except Exception as e:
-        st.error(f"Error exportando: {e}")
+        st.error(f"❌ Error exportando: {e}")
 
+# ---------- ACERCA ----------
 else:
-    st.header("Acerca")
-    st.write("""
-    Aplicativo CRUD para inventario de partes y componentes de computadoras.
-    - Registrar, buscar, editar y eliminar componentes.
-    - Exportar inventario a CSV.
+    st.header("ℹ️ Acerca del sistema")
+    st.markdown("""
+    ### 💻 Inventario de Tienda de Cómputo
+    Aplicación CRUD construida con **Streamlit** y **PostgreSQL**.
+    
+    **Funciones principales:**
+    - Registrar, consultar, editar y eliminar componentes.
+    - Filtrado por texto y exportación a CSV.
+    - Diseño responsivo y moderno.
+    
+    Desarrollado por **Alfredo Jefferson Ayquipa Quispe** 🧠
     """)
