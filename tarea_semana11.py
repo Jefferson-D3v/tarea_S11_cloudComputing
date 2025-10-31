@@ -1,3 +1,4 @@
+
 import streamlit as st
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -49,6 +50,9 @@ def create_table():
     conn.close()
 
 # ---------- CRUD ----------
+
+
+
 def insert_item(item):
     sql = """
     INSERT INTO tienda_computo_inventario
@@ -128,7 +132,7 @@ def delete_item(item_id):
 
 # ---------- ESTILOS ----------
 st.set_page_config(page_title="Inventario Tienda de Cómputo", layout="wide")
-# ---------- ESTILO GLOBAL ----------
+
 # ---------- ESTILO GLOBAL ----------
 st.markdown("""
     <style>
@@ -199,6 +203,21 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+#Esto es para que los botones oscuros tengan letra clara
+st.markdown("""
+    <style>
+    /* Botones específicos con texto blanco */
+    button[kind="secondary"] {
+        color: white !important;
+    }
+    
+    /* Botón Descargar CSV */
+    .stDownloadButton button {
+        color: white !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # ---------- INTERFAZ ----------
 st.title("💻 Inventario de Tienda de Cómputo")
 st.caption("Sistema CRUD para registrar, consultar y administrar partes y componentes.")
@@ -206,7 +225,10 @@ st.caption("Sistema CRUD para registrar, consultar y administrar partes y compon
 
 create_table()
 
-menu = st.sidebar.radio("📋 Menú principal", ["🏗️ Registrar parte", "📦 Ver inventario", "🛠️ Editar / Eliminar", "📤 Exportar CSV", "ℹ️ Acerca"])
+# Menu Horizontal
+opciones = ["🏗️ Registrar parte", "📦 Ver inventario", "🛠️ Editar / Eliminar", "📤 Exportar CSV", "ℹ️ Acerca"]
+menu = st.radio("Selecciona una opción:", opciones, horizontal=True, label_visibility="collapsed")
+st.divider()  # Línea separadora
 
 # ---------- REGISTRAR ----------
 if menu == "🏗️ Registrar parte":
@@ -259,14 +281,22 @@ elif menu == "📦 Ver inventario":
     q = st.text_input("🔍 Buscar por código, nombre, marca o categoría")
     per_page = st.selectbox("Mostrar registros por página", [10, 25, 50, 100], index=1)
     page = st.session_state.get("page", 0)
+    
     if st.button("Buscar"):
         st.session_state.page = 0
         page = 0
+    
     offset = page * per_page
 
     try:
-        rows = get_items(search=q if q else None, limit=per_page, offset=offset)
+        rows = get_items(search=q if q else None, limit=per_page + 1, offset=offset)  # ← Cambio aquí
+        has_more = len(rows) > per_page  # ← Y aquí
+        
+        if has_more:
+            rows = rows[:per_page]  # ← Y aquí
+        
         df = pd.DataFrame(rows)
+        
         if df.empty:
             st.info("No hay registros.")
         else:
@@ -275,13 +305,13 @@ elif menu == "📦 Ver inventario":
             with c1:
                 if st.button("⬅️ Anterior") and page > 0:
                     st.session_state.page = page - 1
-                    st.experimental_rerun()
+                    st.rerun()
             with c2:
                 st.markdown(f"**Página {page + 1}**")
             with c3:
-                if st.button("Siguiente ➡️") and len(df) == per_page:
+                if st.button("Siguiente ➡️") and has_more:  # ← Cambio crucial aquí
                     st.session_state.page = page + 1
-                    st.experimental_rerun()
+                    st.rerun()
     except Exception as e:
         st.error(f"❌ Error cargando inventario: {e}")
 
@@ -378,5 +408,5 @@ else:
     - Filtrado por texto y exportación a CSV.
     - Diseño responsivo y moderno.
     
-    Desarrollado por **Alfredo Jefferson Ayquipa Quispe** 🧠
+    Desarrollado por **Grupo 3 - Cloud Computing**
     """)
